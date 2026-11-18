@@ -16,12 +16,11 @@
       <p class="chapter">Acto III · El misterio continúa</p>
       <h1>¿Cómo abrimos la nave?</h1>
 
-      <p>
-        Los adultos han regresado con un extraño vehículo
-        y dos viajeros que permanecen inconscientes.
-        Nara os muestra el panel situado junto a una compuerta.
-        Nadie en la aldea sabe cómo utilizarlo.
-      </p>
+    <p>
+  Los adultos han regresado con un extraño vehículo.
+  Nara os muestra el panel situado junto a una compuerta.
+  Nadie en la aldea sabe cómo utilizarlo.
+</p>
 
       <p>
         <strong>
@@ -199,48 +198,48 @@
       El panel permanece encendido, pero la compuerta está cerrada.
     </p>
 
-    <div class="actions">
-      <button
-        id="inventory-toggle"
-        type="button"
-        aria-expanded="false"
-        aria-controls="inventory"
-      >
-        Usar un objeto encontrado
-      </button>
+ <section
+  id="proposal-section"
+  class="inventory"
+  aria-labelledby="proposal-title"
+>
+  <h2 id="proposal-title">¿Qué deberíamos hacer primero?</h2>
 
-      <button id="hint" class="secondary" type="button">
-        Pedir una pista
-      </button>
+  <p>
+    Comentad vuestras ideas y escribid una propuesta.
+    Explicad qué queréis probar y por qué.
+  </p>
 
-      <button id="reset" class="secondary" type="button">
-        Volver a empezar
-      </button>
-    </div>
+  <form id="proposal-form">
+    <label for="proposal">Nuestra propuesta:</label>
 
-    <section id="inventory" class="inventory" hidden>
-      <h2>¿Qué objeto recomendaríais utilizar?</h2>
+    <textarea
+      id="proposal"
+      name="proposal"
+      rows="3"
+      maxlength="800"
+      placeholder="Proponemos… porque…"
+      required
+    ></textarea>
 
-      <div class="object-grid">
-        <button type="button" class="object" data-object="stone">
-          <span class="object-icon" aria-hidden="true">🪨</span>
-          Una piedra corriente
-        </button>
+    <button type="submit">Probar nuestra propuesta</button>
+  </form>
 
-        <button type="button" class="object" data-object="card">
-          <img
-            src="https://i.ibb.co/Y4TBBnK9/Alien-octopus-access-key-card.png"
-            alt=""
-          >
-          El objeto negro encontrado
-        </button>
+  <p class="small-note">
+    Esta simulación reconoce algunas palabras y expresiones.
+    Si no entiende vuestra idea, probad a escribirla de otra forma.
+  </p>
+</section>
 
-        <button type="button" class="object" data-object="wood">
-          <span class="object-icon" aria-hidden="true">🪵</span>
-          Un trozo de madera
-        </button>
-      </div>
-    </section>
+<div class="actions">
+  <button id="hint" class="secondary" type="button">
+    Pedir una pista
+  </button>
+
+  <button id="reset" class="secondary" type="button">
+    Volver a empezar
+  </button>
+</div>
 
     <section
       id="success"
@@ -255,10 +254,12 @@
         y se encienden varios dispositivos.
       </p>
 
-      <p>
-        Junto a los adultos, los dos viajeros empiezan
-        a moverse. Uno de ellos abre los ojos…
-      </p>
+     <p>
+  En el interior distinguís los objetos desaparecidos
+  y a dos extraños viajeros que permanecían inmóviles.
+  Al encenderse los dispositivos, empiezan a moverse.
+  Uno de ellos abre los ojos…
+</p>
 
       <p>
         <strong>
