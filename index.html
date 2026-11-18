@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>El misterio de la nave</title>
+
+  <link rel="stylesheet" href="style.css">
+  <script src="puzzle.js" defer></script>
+</head>
+
+<body>
+  <main class="puzzle">
+
+    <header>
+      <p class="chapter">Acto III · El misterio continúa</p>
+      <h1>¿Cómo abrimos la nave?</h1>
+
+      <p>
+        Los adultos han regresado con un extraño vehículo
+        y dos viajeros que permanecen inconscientes.
+        Nara os muestra el panel situado junto a una compuerta.
+        Nadie en la aldea sabe cómo utilizarlo.
+      </p>
+
+      <p>
+        <strong>
+          Observad, recordad las pistas y decidid qué probar.
+        </strong>
+      </p>
+    </header>
+
+    <section class="panel" aria-label="Panel de acceso de la nave">
+
+      <div class="panel-top">
+        <span class="panel-light" aria-hidden="true"></span>
+        <span class="panel-light" aria-hidden="true"></span>
+        <span class="panel-light" aria-hidden="true"></span>
+      </div>
+
+      <!-- Octopus emblem: decorative SVG -->
+      <svg
+        class="octopus"
+        viewBox="0 0 200 180"
+        role="img"
+        aria-label="Emblema de un pulpo de ocho brazos"
+      >
+        <g
+          fill="none"
+          stroke="currentColor"
+          stroke-width="9"
+          stroke-linecap="round"
+        >
+          <path d="M88 88 C55 83 40 51 25 60 C8 70 24 88 34 76"/>
+          <path d="M85 96 C55 99 22 90 15 109 C10 126 31 133 37 119"/>
+          <path d="M88 104 C62 120 39 123 44 145 C49 162 70 153 65 141"/>
+          <path d="M96 108 C84 132 72 151 84 166 C95 177 108 164 99 155"/>
+
+          <path d="M112 88 C145 83 160 51 175 60 C192 70 176 88 166 76"/>
+          <path d="M115 96 C145 99 178 90 185 109 C190 126 169 133 163 119"/>
+          <path d="M112 104 C138 120 161 123 156 145 C151 162 130 153 135 141"/>
+          <path d="M104 108 C116 132 128 151 116 166 C105 177 92 164 101 155"/>
+        </g>
+
+        <path
+          fill="currentColor"
+          d="M65 48
+             C65 0 135 0 135 48
+             C135 74 120 81 115 104
+             L85 104
+             C80 81 65 74 65 48Z"
+        />
+
+        <ellipse cx="86" cy="57" rx="5" ry="9" fill="#101a20"/>
+        <ellipse cx="114" cy="57" rx="5" ry="9" fill="#101a20"/>
+      </svg>
+
+      <button
+        id="slot"
+        class="card-slot"
+        type="button"
+        aria-label="Examinar la abertura estrecha"
+      >
+        <span aria-hidden="true"></span>
+      </button>
+
+      <div id="sequence-display" class="sequence-display">
+        <span aria-hidden="true">— — —</span>
+      </div>
+
+      <div class="symbol-buttons" aria-label="Botones con símbolos">
+        <button
+          type="button"
+          class="symbol"
+          data-symbol="moon"
+          aria-label="Pulsar luna"
+        >☾</button>
+
+        <button
+          type="button"
+          class="symbol"
+          data-symbol="triangle"
+          aria-label="Pulsar triángulo"
+        >△</button>
+
+        <button
+          type="button"
+          class="symbol"
+          data-symbol="circle"
+          aria-label="Pulsar círculo"
+        >○</button>
+
+        <button
+          type="button"
+          class="symbol"
+          data-symbol="diamond"
+          aria-label="Pulsar rombo"
+        >◇</button>
+      </div>
+
+      <div
+        id="entered"
+        class="entered"
+        aria-label="Secuencia introducida"
+      >— — —</div>
+
+      <div class="lower-panel">
+
+        <button
+          id="scanner"
+          class="scanner"
+          type="button"
+          aria-label="Probar el detector con forma de tentáculo"
+        >
+          <svg viewBox="0 0 100 100" aria-hidden="true">
+            <path
+              d="M25 85
+                 C25 65 70 65 70 40
+                 C70 12 42 12 42 33
+                 C42 44 53 45 56 38"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="14"
+              stroke-linecap="round"
+            />
+            <circle cx="30" cy="77" r="3" fill="#152b35"/>
+            <circle cx="43" cy="66" r="3" fill="#152b35"/>
+            <circle cx="57" cy="56" r="3" fill="#152b35"/>
+          </svg>
+        </button>
+
+        <button
+          id="hatch"
+          class="hatch-button"
+          type="button"
+          aria-label="Pulsar el botón con el símbolo de una compuerta"
+        >
+          <svg viewBox="0 0 100 100" aria-hidden="true">
+            <path
+              d="M20 80 V20 H80 V80 M50 20 V80
+                 M37 50 H8 M8 50 L18 40 M8 50 L18 60
+                 M63 50 H92 M92 50 L82 40 M92 50 L82 60"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="5"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            />
+          </svg>
+        </button>
+
+      </div>
+
+      <div class="small-buttons">
+        <button
+          id="signal"
+          class="round-button"
+          type="button"
+          aria-label="Pulsar botón con ondas"
+        >◉</button>
+
+        <button
+          id="power"
+          class="round-button"
+          type="button"
+          aria-label="Pulsar botón de encendido"
+        >⏻</button>
+      </div>
+
+    </section>
+
+    <p
+      id="status"
+      class="status"
+      role="status"
+      aria-live="polite"
+      aria-atomic="true"
+    >
+      El panel permanece encendido, pero la compuerta está cerrada.
+    </p>
+
+    <div class="actions">
+      <button
+        id="inventory-toggle"
+        type="button"
+        aria-expanded="false"
+        aria-controls="inventory"
+      >
+        Usar un objeto encontrado
+      </button>
+
+      <button id="hint" class="secondary" type="button">
+        Pedir una pista
+      </button>
+
+      <button id="reset" class="secondary" type="button">
+        Volver a empezar
+      </button>
+    </div>
+
+    <section id="inventory" class="inventory" hidden>
+      <h2>¿Qué objeto recomendaríais utilizar?</h2>
+
+      <div class="object-grid">
+        <button type="button" class="object" data-object="stone">
+          <span class="object-icon" aria-hidden="true">🪨</span>
+          Una piedra corriente
+        </button>
+
+        <button type="button" class="object" data-object="card">
+          <img
+            src="https://i.ibb.co/Y4TBBnK9/Alien-octopus-access-key-card.png"
+            alt=""
+          >
+          El objeto negro encontrado
+        </button>
+
+        <button type="button" class="object" data-object="wood">
+          <span class="object-icon" aria-hidden="true">🪵</span>
+          Un trozo de madera
+        </button>
+      </div>
+    </section>
+
+    <section
+      id="success"
+      class="success"
+      aria-labelledby="success-title"
+      hidden
+    >
+      <h2 id="success-title">¡La compuerta se abre!</h2>
+
+      <p>
+        La nave emite un zumbido. Una luz recorre su interior
+        y se encienden varios dispositivos.
+      </p>
+
+      <p>
+        Junto a los adultos, los dos viajeros empiezan
+        a moverse. Uno de ellos abre los ojos…
+      </p>
+
+      <p>
+        <strong>
+          Habéis activado algo más que una puerta.
+          La historia está a punto de dar un giro.
+        </strong>
+      </p>
+    </section>
+
+    <p class="small-note">
+      Simulación narrativa. No es necesario usar la fuerza:
+      observad las respuestas del panel y probad vuestras ideas.
+    </p>
+
+  </main>
+</body>
+</html>
