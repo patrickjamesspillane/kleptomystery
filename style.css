@@ -492,3 +492,19 @@ button:disabled {
     width: 100%;
   }
 }
+
+.fullscreen-controls {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 18px;
+}
+
+html:fullscreen {
+  overflow-y: auto;
+  background: #091923;
+}
+
+#fullscreen-message {
+  color: #c3d3d8;
+  font-size: 0.9em;
+}
