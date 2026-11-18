@@ -13,18 +13,16 @@
   const power = $("power");
   const status = $("status");
 
-  const inventoryToggle = $("inventory-toggle");
-  const inventory = $("inventory");
+  const proposalSection = $("proposal-section");
+  const proposalForm = $("proposal-form");
+  const proposal = $("proposal");
+
   const hintButton = $("hint");
   const resetButton = $("reset");
   const success = $("success");
 
   const symbolButtons = Array.from(
     document.querySelectorAll(".symbol")
-  );
-
-  const objectButtons = Array.from(
-    document.querySelectorAll(".object")
   );
 
   const symbols = {
@@ -34,29 +32,24 @@
     diamond: "◇"
   };
 
-  // Change this array to change the puzzle's code.
-  const correctSequence = [
-    "moon",
-    "triangle",
-    "circle"
-  ];
+  const correctSequence = ["moon", "triangle", "circle"];
 
   const hints = {
     locked: [
-      "¿Recordáis algún objeto encontrado al final del acto II?",
-      "Comparad la marca del panel con la del objeto encontrado.",
-      "El objeto negro es plano y tiene la misma marca. ¿Dónde podría encajar?"
+      "Recordad lo que encontraron Nara y sus amigos al final del acto II.",
+      "¿Habéis visto antes la marca del animal de muchos brazos?",
+      "Encontraron un objeto negro y plano. ¿En qué parte del panel podría encajar?"
     ],
 
     code: [
-      "La tarjeta ha hecho aparecer tres símbolos en la pantalla.",
-      "Comparad esos símbolos con los cuatro botones del panel.",
-      "Pulsad los símbolos en el mismo orden en que aparecen, de izquierda a derecha."
+      "La pantalla ha cambiado después de introducir el objeto.",
+      "Comparad los símbolos de la pantalla con los botones.",
+      "Pulsad los símbolos de izquierda a derecha, en el orden de la pantalla."
     ],
 
     ready: [
-      "Uno de los botones tiene ahora una luz diferente.",
-      "Observad el dibujo del botón iluminado: parece representar una compuerta que se abre."
+      "Uno de los botones se ha iluminado.",
+      "Su dibujo representa una compuerta que se abre."
     ]
   };
 
@@ -74,6 +67,16 @@
     hintIndex = 0;
   }
 
+  function normalize(text) {
+    return text
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/[^\w\s]/g, " ")
+      .replace(/\s+/g, " ")
+      .trim();
+  }
+
   function showInput() {
     const marks = input.map(key => symbols[key]);
 
@@ -86,10 +89,7 @@
 
   function flashSlot() {
     slot.classList.remove("slot-hint");
-
-    // Restart the brief animation if clicked again.
     void slot.offsetWidth;
-
     slot.classList.add("slot-hint");
   }
 
@@ -97,23 +97,14 @@
     slot.classList.remove("slot-hint");
   });
 
-  function closeInventory() {
-    inventory.hidden = true;
-    inventoryToggle.setAttribute("aria-expanded", "false");
-  }
-
   function insertCard() {
-    if (stage !== "locked") {
-      say(
-        "Nara señala la abertura: «El objeto negro sigue colocado aquí»."
-      );
-      return;
-    }
+    if (stage !== "locked") return;
 
     setStage("code");
 
     slot.classList.remove("slot-hint");
     slot.classList.add("has-card");
+
     slot.setAttribute(
       "aria-label",
       "Abertura con el objeto negro insertado"
@@ -126,13 +117,12 @@
 
     display.setAttribute(
       "aria-label",
-      "La pantalla muestra, de izquierda a derecha: " +
-      "luna, triángulo y círculo"
+      "La pantalla muestra, de izquierda a derecha: luna, triángulo y círculo"
     );
 
     input = [];
     showInput();
-    closeInventory();
+    proposalSection.hidden = true;
 
     say(
       "Nara introduce el objeto negro en la abertura. " +
@@ -143,54 +133,137 @@
     symbolButtons[0].focus({ preventScroll: true });
   }
 
-  inventoryToggle.addEventListener("click", function () {
-    if (stage !== "locked") {
+  function tryScanner() {
+    if (stage === "opened") return;
+
+    clearTimeout(scannerTimer);
+    scanner.classList.add("rejected");
+
+    say(
+      "Nara apoya la mano en el detector. La luz cambia a naranja. " +
+      "«Mi mano no tiene la forma de esta marca», observa. " +
+      "El panel vuelve a su estado anterior."
+    );
+
+    scannerTimer = setTimeout(function () {
+      scanner.classList.remove("rejected");
+    }, 1600);
+  }
+
+  proposalForm.addEventListener("submit", function (event) {
+    event.preventDefault();
+
+    if (stage !== "locked") return;
+
+    const text = normalize(proposal.value);
+
+    if (!text) {
+      say("Escribid una propuesta antes de probarla.");
+      proposal.focus({ preventScroll: true });
+      return;
+    }
+
+    /*
+      Prepared keyword matching, not AI.
+      A reference to the card or found black object is accepted.
+    */
+    const mentionsCard =
+      /\b(tarjeta|tarjetas|tarjetita|credencial|pase|card)\b/.test(text) ||
+      /\b(objeto|rectangulo|pieza|llave)\b.*\b(negr\w*|plan\w*|encontr\w*|pulpo)\b/.test(text) ||
+      /\b(negr\w*|plan\w*|encontr\w*)\b.*\b(objeto|rectangulo|pieza|llave)\b/.test(text) ||
+      /\b(lo que|eso que)\s+(encontramos|encontraron|encontrasteis)\b/.test(text);
+
+    /*
+      Do not treat a clearly rejected suggestion as an instruction.
+      Ask students to state their chosen action instead.
+    */
+    const rejectsCard =
+      /\b(no|nunca)\s+(?:\w+\s+){0,4}(?:tarjeta|credencial|pase|objeto negro)\b/.test(text) ||
+      /\b(sin|descartar|descartamos|evitar)\s+(?:\w+\s+){0,3}(?:tarjeta|credencial|objeto negro)\b/.test(text);
+
+    if (mentionsCard && rejectsCard) {
       say(
-        "El objeto negro ya está insertado. " +
-        "Observad qué ha cambiado en el panel."
+        "No tengo clara vuestra decisión. Escribid una sola acción " +
+        "que queráis probar, indicando el objeto y dónde lo utilizaríais."
       );
       return;
     }
 
-    const willOpen = inventory.hidden;
+    if (mentionsCard) {
+      insertCard();
+      return;
+    }
 
-    inventory.hidden = !willOpen;
-    inventoryToggle.setAttribute(
-      "aria-expanded",
-      String(willOpen)
+    if (/\b(mano|dedo|huella|tentaculo|detector|escaner)\b/.test(text)) {
+      tryScanner();
+      return;
+    }
+
+    if (/\b(piedra|roca)\b/.test(text)) {
+      say(
+        "Nara acerca la piedra al panel, pero no cambia nada. " +
+        "La conserva para mantener la conexión con vosotros. " +
+        "¿Qué otra idea queréis probar?"
+      );
+      return;
+    }
+
+    if (/\b(golpear|romper|forzar|patada|martillo)\b/.test(text)) {
+      say(
+        "«Podríamos estropearlo», dice Aren. " +
+        "El equipo decide buscar una forma de utilizar el mecanismo. " +
+        "¿Qué proponéis?"
+      );
+      return;
+    }
+
+    if (/\b(boton|botones|pulsar|presionar|apretar|encender)\b/.test(text)) {
+      say(
+        "Nara prueba un botón. Se oye un sonido breve, " +
+        "pero la compuerta sigue cerrada. " +
+        "Podéis explorar los controles del panel o proponer otra acción."
+      );
+      return;
+    }
+
+    if (/\b(codigo|contrasena|clave|simbolo|simbolos|secuencia)\b/.test(text)) {
+      say(
+        "La pantalla todavía no muestra ninguna secuencia. " +
+        "¿Qué podríamos hacer para activarla?"
+      );
+      return;
+    }
+
+    if (/\b(ranura|abertura|hueco)\b/.test(text)) {
+      say(
+        "Nara examina la abertura: es estrecha y alargada. " +
+        "¿Qué proponéis introducir en ella?"
+      );
+      return;
+    }
+
+    if (/\b(observar|mirar|examinar|investigar|inspeccionar)\b/.test(text)) {
+      say(
+        "Observáis una marca con muchos brazos, una abertura estrecha, " +
+        "una pantalla y varios botones. " +
+        "Relacionad lo que veis con las pistas de la historia."
+      );
+      return;
+    }
+
+    say(
+      "Esta simulación no reconoce todavía vuestra propuesta. " +
+      "Probad a describir una acción concreta: " +
+      "qué queréis utilizar y qué queréis hacer con ello."
     );
-  });
-
-  objectButtons.forEach(function (button) {
-    button.addEventListener("click", function () {
-      if (stage !== "locked") return;
-
-      const object = button.dataset.object;
-
-      if (object === "card") {
-        insertCard();
-      } else if (object === "stone") {
-        say(
-          "Nara acerca la piedra corriente a la abertura. " +
-          "No encaja y el panel no cambia. " +
-          "«No voy a forzarla», os dice."
-        );
-      } else {
-        say(
-          "El trozo de madera no encaja en la abertura. " +
-          "Nara lo aparta para no dañar el panel. " +
-          "¿Hay otro objeto que tenga una forma más adecuada?"
-        );
-      }
-    });
   });
 
   slot.addEventListener("click", function () {
     if (stage === "locked") {
       say(
-        "Nara observa la abertura: " +
-        "«Es estrecha, alargada y tiene espacio en su interior. " +
-        "Encima aparece la marca del animal de muchos brazos»."
+        "Nara observa una abertura estrecha y alargada. " +
+        "Encima aparece la marca del animal de muchos brazos. " +
+        "¿Qué proponéis hacer?"
       );
     } else if (stage === "code") {
       say(
@@ -199,30 +272,24 @@
       );
     } else if (stage === "ready") {
       say(
-        "La tarjeta está colocada y un botón " +
-        "del panel se ha iluminado."
+        "El objeto está colocado y un botón del panel se ha iluminado."
       );
-    } else {
-      say("La compuerta ya está abierta.");
     }
   });
 
   symbolButtons.forEach(function (button) {
     button.addEventListener("click", function () {
       if (stage === "locked") {
-        flashSlot();
-
         say(
-          "El botón emite un destello, pero no ocurre nada más. " +
-          "La abertura estrecha se ilumina brevemente."
+          "El botón emite un sonido, pero la pantalla no cambia. " +
+          "Parece que falta un paso anterior."
         );
         return;
       }
 
       if (stage === "ready") {
         say(
-          "La secuencia ya está completada. " +
-          "Observad el botón que acaba de iluminarse."
+          "La secuencia está completada. Observad qué ha cambiado."
         );
         return;
       }
@@ -233,25 +300,21 @@
       input.push(key);
       showInput();
 
-      const position = input.length - 1;
-
-      if (key !== correctSequence[position]) {
+      if (key !== correctSequence[input.length - 1]) {
         input = [];
         showInput();
 
         say(
-          "La pantalla parpadea y borra los símbolos introducidos. " +
-          "La secuencia de arriba sigue visible. " +
-          "Podéis volver a intentarlo."
+          "La pantalla borra los símbolos introducidos. " +
+          "La secuencia superior sigue visible. Volved a intentarlo."
         );
-
         return;
       }
 
       if (input.length === correctSequence.length) {
         setStage("ready");
-
         hatch.classList.add("ready");
+
         hatch.setAttribute(
           "aria-label",
           "Botón iluminado con el símbolo de una compuerta"
@@ -259,55 +322,32 @@
 
         say(
           "Los tres símbolos permanecen encendidos. " +
-          "Se oye un pequeño clic y se ilumina " +
-          "otro botón del panel. ¿Qué representa su dibujo?"
+          "Se oye un clic y otro botón se ilumina. " +
+          "¿Qué representa?"
         );
       } else {
         say(
-          "El panel mantiene encendido el símbolo introducido. " +
-          "La secuencia todavía no está completa."
+          "El símbolo permanece encendido. La secuencia aún no está completa."
         );
       }
     });
   });
 
-  scanner.addEventListener("click", function () {
-    if (stage === "opened") return;
-
-    clearTimeout(scannerTimer);
-
-    scanner.classList.add("rejected");
-
-    say(
-      "Nara apoya la mano en el detector. " +
-      "La luz cambia a naranja y aparece una señal de rechazo. " +
-      "«Mi mano no tiene la forma de esta marca», observa. " +
-      "El panel vuelve a su estado anterior."
-    );
-
-    scannerTimer = setTimeout(function () {
-      scanner.classList.remove("rejected");
-    }, 1600);
-  });
+  scanner.addEventListener("click", tryScanner);
 
   hatch.addEventListener("click", function () {
     if (stage === "locked") {
-      flashSlot();
-
       say(
-        "La compuerta no se mueve. " +
-        "La abertura estrecha se ilumina por un instante."
+        "La compuerta no se mueve. Parece que el mecanismo " +
+        "todavía no está autorizado."
       );
-
       return;
     }
 
     if (stage === "code") {
       say(
-        "Se oye un sonido breve, pero la compuerta sigue cerrada. " +
-        "La pantalla continúa mostrando los tres símbolos."
+        "La compuerta sigue cerrada. La pantalla muestra tres símbolos."
       );
-
       return;
     }
 
@@ -315,79 +355,77 @@
 
     setStage("opened");
 
-    panel.classList.add("opened");
+    panel.classList.add("opened", "opening-flash");
     success.hidden = false;
-    closeInventory();
+    proposalSection.hidden = true;
 
     say(
-      "El botón se vuelve turquesa. " +
-      "La compuerta se desliza lentamente y la nave " +
-      "empieza a activarse. ¡Lo habéis conseguido!"
+      "Una luz turquesa ilumina todo el panel. " +
+      "La compuerta se desliza y los dispositivos del interior " +
+      "empiezan a encenderse. ¡Lo habéis conseguido!"
     );
 
     panel.querySelectorAll("button").forEach(function (button) {
       button.disabled = true;
     });
 
-    inventoryToggle.disabled = true;
     hintButton.disabled = true;
 
     success.setAttribute("tabindex", "-1");
     success.focus({ preventScroll: true });
   });
 
+  panel.addEventListener("animationend", function (event) {
+    if (event.animationName === "panel-opening-light") {
+      panel.classList.remove("opening-flash");
+    }
+  });
+
   signal.addEventListener("click", function () {
     if (stage === "opened") return;
 
     say(
-      "Una luz recorre el borde del panel y vuelve al punto " +
-      "de partida. No parece abrir la compuerta. " +
-      "El resto del panel no cambia."
+      "Una luz recorre el borde del panel y vuelve al punto de partida. " +
+      "La compuerta sigue cerrada."
     );
   });
 
   power.addEventListener("click", function () {
     if (stage === "opened") return;
 
-    if (stage === "locked") {
-      flashSlot();
-
-      say(
-        "El panel ya tiene energía. " +
-        "Al pulsar este botón, la abertura estrecha " +
-        "emite un destello."
-      );
-    } else {
-      say(
-        "El panel sigue encendido. " +
-        "La tarjeta permanece insertada y " +
-        "vuestras acciones anteriores se conservan."
-      );
-    }
+    say(
+      stage === "locked"
+        ? "El panel ya tiene energía. El botón no abre la compuerta."
+        : "El panel sigue encendido y conserva los pasos que habéis completado."
+    );
   });
 
   hintButton.addEventListener("click", function () {
     if (stage === "opened") return;
 
     const stageHints = hints[stage];
-    const message = stageHints[
-      Math.min(hintIndex, stageHints.length - 1)
-    ];
 
-    say("Pista: " + message);
+    say(
+      "Pista: " +
+      stageHints[Math.min(hintIndex, stageHints.length - 1)]
+    );
+
     hintIndex++;
+
+    if (stage === "locked" && hintIndex >= 3) {
+      flashSlot();
+    }
   });
 
   resetButton.addEventListener("click", function () {
     clearTimeout(scannerTimer);
 
-    stage = "locked";
+    setStage("locked");
     input = [];
-    hintIndex = 0;
 
-    panel.classList.remove("opened");
-
+    panel.classList.remove("opened", "opening-flash");
     slot.classList.remove("has-card", "slot-hint");
+
     slot.setAttribute(
       "aria-label",
       "Examinar la abertura estrecha"
@@ -399,6 +437,7 @@
 
     scanner.classList.remove("rejected");
     hatch.classList.remove("ready");
+
     hatch.setAttribute(
       "aria-label",
       "Pulsar el botón con el símbolo de una compuerta"
@@ -408,18 +447,18 @@
       button.disabled = false;
     });
 
-    inventoryToggle.disabled = false;
     hintButton.disabled = false;
-
     success.hidden = true;
-    closeInventory();
+
+    proposalForm.reset();
+    proposalSection.hidden = false;
     showInput();
 
     say(
-      "El panel permanece encendido, " +
-      "pero la compuerta está cerrada."
+      "El panel permanece encendido, pero la compuerta está cerrada. " +
+      "¿Qué deberíamos hacer primero?"
     );
 
-    inventoryToggle.focus({ preventScroll: true });
+    proposal.focus({ preventScroll: true });
   });
 })();
