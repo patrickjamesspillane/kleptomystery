@@ -400,3 +400,95 @@ button:disabled {
     box-shadow: 0 0 14px #70dfcf66;
   }
 }
+/* Open question */
+#proposal-form {
+  display: grid;
+  gap: 14px;
+}
+
+#proposal-form label {
+  font-weight: bold;
+  color: #70dfcf;
+}
+
+#proposal {
+  display: block;
+  width: 100%;
+  min-height: 110px;
+  padding: 14px;
+  border: 1px solid #70dfcf;
+  border-radius: 8px;
+  background: #091923;
+  color: #ffffff;
+  font: inherit;
+  resize: vertical;
+}
+
+#proposal::placeholder {
+  color: #afc5cc;
+}
+
+#proposal:focus-visible {
+  outline: 3px solid #ffffff;
+  outline-offset: 4px;
+}
+
+#proposal-form button {
+  justify-self: start;
+}
+
+.actions {
+  margin-top: 20px;
+}
+
+/* One brief flash across the entire panel */
+.panel {
+  position: relative;
+  isolation: isolate;
+}
+
+.panel::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  border-radius: inherit;
+  background: #70dfcf;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.panel.opening-flash::after {
+  animation: panel-opening-light 1.4s ease-out forwards;
+}
+
+@keyframes panel-opening-light {
+  0% {
+    opacity: 0;
+  }
+
+  25% {
+    opacity: 0.75;
+  }
+
+  100% {
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .panel.opening-flash::after {
+    animation: none;
+  }
+
+  .panel.opened {
+    border-color: #bafff0;
+    box-shadow: 0 0 32px #70dfcf88;
+  }
+}
+
+@media (max-width: 550px) {
+  #proposal-form button {
+    width: 100%;
+  }
+}
