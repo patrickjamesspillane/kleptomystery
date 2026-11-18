@@ -462,3 +462,41 @@
     proposal.focus({ preventScroll: true });
   });
 })();
+
+(function () {
+  "use strict";
+
+  const button = document.getElementById("fullscreen-button");
+  const message = document.getElementById("fullscreen-message");
+  const game = document.documentElement;
+
+  if (!document.fullscreenEnabled || !game.requestFullscreen) {
+    button.hidden = true;
+    return;
+  }
+
+  button.addEventListener("click", async function () {
+    message.hidden = true;
+
+    try {
+      if (document.fullscreenElement) {
+        await document.exitFullscreen();
+      } else {
+        await game.requestFullscreen();
+      }
+    } catch (error) {
+      message.textContent =
+        "No se ha podido activar la pantalla completa. " +
+        "Abrid el juego directamente en su propia pestaña.";
+      message.hidden = false;
+    }
+  });
+
+  document.addEventListener("fullscreenchange", function () {
+    const active = Boolean(document.fullscreenElement);
+
+    button.textContent = active
+      ? "⛶ Salir de pantalla completa"
+      : "⛶ Pantalla completa";
+  });
+})();
